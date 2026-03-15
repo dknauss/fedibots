@@ -40,9 +40,13 @@ fedibots/
 │   ├── Storage/
 │   │   ├── StorageInterface.php       # Contract (future: SQLite backend)
 │   │   └── FlatFile.php               # JSON flat-file storage
-│   └── Content/
-│       ├── ContentProviderInterface.php  # What every bot implements
-│       └── Post.php                      # Post value object
+│   ├── Content/
+│   │   ├── ContentProviderInterface.php  # What every bot implements
+│   │   └── Post.php                      # Post value object
+│   ├── Monitor/
+│   │   └── HashtagMonitor.php            # Poll RSS feeds for hashtag posts
+│   └── Report/
+│       └── DigestGenerator.php           # Generate engagement digest posts
 │
 ├── content/
 │   ├── ContentProvider.php            # YOUR bot's content (edit this)
@@ -57,14 +61,19 @@ fedibots/
 │   ├── setup.php                      # Interactive: generate keys, create .env
 │   ├── keygen.php                     # RSA keypair generation
 │   ├── post.php                       # CLI: trigger a post (for cron)
+│   ├── monitor.php                    # Poll hashtag feeds (for cron)
+│   ├── report.php                     # Generate + post engagement digest
 │   ├── verify.php                     # Check deployment health
 │   └── import-tips.php                # Parse Benchmark.md into tips.json
 │
 ├── data/                              # Runtime (gitignored)
 │   ├── followers/
 │   ├── posts/
-│   ├── inbox/
-│   └── logs/
+│   ├── inbox/                         # Incoming replies/mentions
+│   ├── monitored/                     # Posts found via hashtag monitoring
+│   ├── reports/                       # Generated digest reports (JSON)
+│   ├── logs/
+│   └── stats.json                     # Engagement counters
 │
 ├── media/                             # Attachments (gitignored)
 │
@@ -129,10 +138,57 @@ Level 1 | Web Server Config
 
 Cron: `0 14 * * * php /path/to/bin/post.php`
 
-### Phase 5: CLI Tools, Tests, Docs
+### Phase 5: Engagement Tracking + Topic Monitoring
+Extend the inbox and add reporting so the bot operator knows what's happening.
+
+**Inbox expansion** (`Inbox.php`):
+- Accept and store `Create` activities (replies/mentions) in `data/inbox/`
+- Accept `Announce` and `Like` if received (note: Mastodon does NOT push these to remote servers — only counts are visible)
+- Store all incoming activities as JSON files for review
+- Track engagement counters in `data/stats.json`
+
+**Topic monitoring** (`src/Monitor/HashtagMonitor.php`):
+- Poll RSS feeds for hashtag timelines (no auth needed, simplest approach)
+  - e.g., `https://mastodon.social/tags/WordPressSecurity.rss`
+  - Configurable list of instances and hashtags in `.env`
+- Store discovered posts in `data/monitored/`
+- Deduplicate by post URL
+- Mark posts as "interesting" based on keyword matching
+- Collect only — no automatic boosting/resharing
+
+**Reporting** (`bin/report.php` + `src/Report/DigestGenerator.php`):
+- `bin/report.php` — CLI tool (cron-driven) that:
+  1. Reads engagement data from `data/stats.json` and `data/inbox/`
+  2. Reads monitored discussions from `data/monitored/`
+  3. Generates a digest post and broadcasts it to followers
+  4. Writes `data/reports/YYYY-MM-DD.json` for operator review
+  5. Sends webhook notification to Discord/Slack (`WEBHOOK_URL` in `.env`)
+
+**.env additions:**
+```env
+# Monitoring — comma-separated, add your own instances
+MONITOR_HASHTAGS=WordPress,WordPressSecurity,WPSec,InfoSec
+MONITOR_INSTANCES=mastodon.social,infosec.exchange,phpc.social,wptoots.social
+MONITOR_KEYWORDS=vulnerability,CVE,exploit,hardening,wp-config,brute force
+MONITOR_INTERVAL=3600
+
+# Reporting — all three channels active
+REPORT_FREQUENCY=weekly
+WEBHOOK_URL=https://discord.com/api/webhooks/...
+```
+
+**Cron additions:**
+```
+0 */1 * * * php /path/to/bin/monitor.php    # Poll hashtags hourly
+0 9  * 1 * php /path/to/bin/report.php      # Weekly digest Monday 9am
+```
+
+**Verify:** Run `bin/monitor.php`, confirm posts stored in `data/monitored/`. Run `bin/report.php`, confirm digest post appears in followers' timelines.
+
+### Phase 6: CLI Tools, Tests, Docs
 - `bin/setup.php` — interactive setup wizard
 - `bin/verify.php` — deployment health check
-- Unit tests for Signature, Actor, WebFinger, ContentProvider, FlatFile
+- Unit tests for Signature, Actor, WebFinger, ContentProvider, FlatFile, HashtagMonitor, DigestGenerator
 - Integration tests for Inbox and Delivery (mocked HTTP)
 - `README.md` — full setup guide + "create your own bot" tutorial
 - GitHub Actions CI (PHPUnit + PHPStan level 6)
@@ -140,13 +196,30 @@ Cron: `0 14 * * * php /path/to/bin/post.php`
 ## Content Pipeline
 
 ```
-wp-security-benchmark/WordPress-Security-Benchmark.md
-    -> bin/import-tips.php (parse 42 controls)
-    -> tips.json (id, title, section, level, tip text, hashtags)
-    -> ContentProvider.php (cycle through tips, track state)
-    -> bin/post.php (cron-triggered)
-    -> Outbox.php -> Delivery.php (sign + broadcast)
-    -> Followers' fediverse timelines
+OUTBOUND (daily tips):
+  wp-security-benchmark/WordPress-Security-Benchmark.md
+      -> bin/import-tips.php (parse 42 controls)
+      -> tips.json (structured tip data)
+      -> ContentProvider.php (select next tip)
+      -> bin/post.php (cron)
+      -> Delivery.php (broadcast to followers)
+
+INBOUND (engagement):
+  Fediverse -> Inbox.php
+      -> data/inbox/ (replies, mentions stored as JSON)
+      -> data/stats.json (follower count, reply count)
+
+MONITORING (hashtag watch):
+  bin/monitor.php (cron, hourly)
+      -> HashtagMonitor.php polls RSS feeds
+      -> data/monitored/ (interesting posts stored)
+
+REPORTING (weekly digest):
+  bin/report.php (cron, weekly)
+      -> DigestGenerator.php reads inbox + monitored + stats
+      -> Posts digest to followers
+      -> Writes data/reports/YYYY-MM-DD.json
+      -> Webhook to Discord/Slack
 ```
 
 ## Key Interface
