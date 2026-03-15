@@ -11,7 +11,9 @@ use Fedibots\ActivityPub\Actor;
 use Fedibots\ActivityPub\NodeInfo;
 use Fedibots\ActivityPub\Collections;
 use Fedibots\ActivityPub\Inbox;
+use Fedibots\ActivityPub\Outbox;
 use Fedibots\ActivityPub\Signature;
+use Fedibots\ActivityPub\Delivery;
 
 final class Router
 {
@@ -30,7 +32,8 @@ final class Router
             '.well-known/nodeinfo'  => (new NodeInfo($this->config))->discovery(),
             'nodeinfo/2.1'          => (new NodeInfo($this->config))->schema(),
             'inbox'                 => (new Inbox($this->config, $this->storage, new Signature($this->config)))->handle(),
-            'outbox'                => (new Collections($this->config, $this->storage))->outbox(),
+            'outbox'                => $this->outbox()->collection(),
+            'action/send'           => $this->outbox()->send(),
             'followers'             => (new Collections($this->config, $this->storage))->followers(),
             'following'             => (new Collections($this->config, $this->storage))->following(),
             default                 => $this->matchDynamic($path),
@@ -48,6 +51,13 @@ final class Router
         }
 
         $this->notFound();
+    }
+
+    private function outbox(): Outbox
+    {
+        $sig = new Signature($this->config);
+        $delivery = new Delivery($this->config, $this->storage, $sig);
+        return new Outbox($this->config, $this->storage, $sig, $delivery);
     }
 
     private function notFound(): void
