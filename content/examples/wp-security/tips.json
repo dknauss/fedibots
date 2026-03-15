@@ -1,0 +1,629 @@
+[
+    {
+        "id": "1.1",
+        "title": "Ensure TLS 1.2+ is enforced",
+        "section": "Web Server Configuration",
+        "level": 1,
+        "tip": "Only TLS 1.2 and TLS 1.3 should be accepted. Level 1 applies to every deployment where the operator controls the web server. Modern web servers (Nginx 1.23.4+, Apache 2.4.x) default to TLS 1.2+. TLS 1.0 and 1.1 contain known vulnerabilities and must be disabled. TLS 1.0 and 1.1 are vulnerable to BEAST, POODLE, and other attacks. All major browse...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "TLS"
+        ]
+    },
+    {
+        "id": "1.2",
+        "title": "Ensure HTTP security headers are configured",
+        "section": "Web Server Configuration",
+        "level": 1,
+        "tip": "The web server should send security-related HTTP headers including Content-Security-Policy, X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security (HSTS), Referrer-Policy, and Permissions-Policy. HTTP security headers instruct the browser to enable built-in protections against common attacks such as XSS, clickjacking, MIME-type confu...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "WebSecurity"
+        ]
+    },
+    {
+        "id": "1.3",
+        "title": "Ensure server tokens and version information are hidden",
+        "section": "Web Server Configuration",
+        "level": 1,
+        "tip": "The web server should not disclose its version number, operating system, or module information in HTTP response headers or error pages. Version information helps attackers identify specific vulnerabilities to target. Removing it forces attackers to probe the server more actively, increasing the chance of detection.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec"
+        ]
+    },
+    {
+        "id": "1.4",
+        "title": "Ensure direct PHP execution is blocked in upload directories",
+        "section": "Web Server Configuration",
+        "level": 1,
+        "tip": "PHP execution must be disabled in the wp-content/uploads/ directory and any other directories intended only for static file storage. If an attacker uploads a malicious PHP file through a vulnerability (e.g., an insecure file upload in a plugin), blocking PHP execution in the uploads directory prevents the file from being executed.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "PHP"
+        ]
+    },
+    {
+        "id": "1.5",
+        "title": "Ensure rate limiting is configured for all API surfaces",
+        "section": "Web Server Configuration",
+        "level": 1,
+        "tip": "HTTP request rate limiting should be applied to all authentication and API endpoints, including `wp-login.php`, `xmlrpc.php`, and the WordPress REST API (`/wp-json/`). WordPress authentication and API interfaces are primary targets for automated brute-force and resource exhaustion attacks — classified as API4: Unrestricted Resource Consumption...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "API"
+        ]
+    },
+    {
+        "id": "2.1",
+        "title": "Ensure expose_php is disabled",
+        "section": "PHP Configuration",
+        "level": 1,
+        "tip": "The expose_php directive in php.ini must be set to Off. This prevents PHP from disclosing its presence and version in HTTP response headers (X-Powered-By). Version information assists attackers in identifying vulnerabilities specific to the running PHP version.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "PHP"
+        ]
+    },
+    {
+        "id": "2.2",
+        "title": "Ensure display_errors is disabled in production",
+        "section": "PHP Configuration",
+        "level": 1,
+        "tip": "The display_errors directive must be set to Off in production environments. PHP errors should be logged to a file, not displayed to users. Displayed PHP errors can reveal file paths, database connection details, and application structure to attackers.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "PHP"
+        ]
+    },
+    {
+        "id": "2.3",
+        "title": "Ensure dangerous PHP functions are disabled",
+        "section": "PHP Configuration",
+        "level": 1,
+        "tip": "PHP functions that allow arbitrary command execution, code evaluation, or information disclosure should be disabled unless specifically required. If an attacker achieves code execution (e.g., through a vulnerable plugin), these functions enable them to execute system commands, read arbitrary files, or escalate the attack.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "PHP"
+        ]
+    },
+    {
+        "id": "2.4",
+        "title": "Ensure open_basedir restricts file access",
+        "section": "PHP Configuration",
+        "level": 2,
+        "tip": "The open_basedir directive should restrict PHP file operations to the WordPress installation directory and required system paths only. open_basedir prevents PHP code from reading or writing files outside the defined directory tree, limiting the impact of a file inclusion or traversal vulnerability.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "PHP",
+            "RESTAPI"
+        ]
+    },
+    {
+        "id": "2.5",
+        "title": "Ensure PHP session security is configured",
+        "section": "PHP Configuration",
+        "level": 1,
+        "tip": "PHP session configuration should enforce secure defaults: cookies marked Secure, HttpOnly, and SameSite=Lax or Strict. Session ID entropy and hashing should use strong algorithms. Secure session configuration prevents session fixation, cookie theft via XSS, and cross-site request forgery via session cookies. Note: WordPress core does not use PHP...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "PHP",
+            "Sessions"
+        ]
+    },
+    {
+        "id": "3.1",
+        "title": "Ensure the WordPress database user has minimal privileges",
+        "section": "Database Configuration",
+        "level": 1,
+        "tip": "The MySQL/MariaDB user account used by WordPress should be scoped to the WordPress database only and granted the minimum privileges required for normal operation and maintenance. WordPress core, plugins, themes, and updates require eight privileges: SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, and DROP. The WordPress project explicitly ...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Database"
+        ]
+    },
+    {
+        "id": "3.2",
+        "title": "Ensure the database is not accessible from external hosts",
+        "section": "Database Configuration",
+        "level": 1,
+        "tip": "MySQL/MariaDB should be configured to listen only on localhost (127.0.0.1) or a Unix socket. Remote TCP connections should be disabled unless required and tunneled through SSH or a VPN. A database accessible over the network expands the attack surface. Brute-force attacks, credential stuffing, and exploitation of database vulnerabilities become ...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Database"
+        ]
+    },
+    {
+        "id": "3.3",
+        "title": "Review database table prefix strategy (optional obscurity control)",
+        "section": "Database Configuration",
+        "level": 2,
+        "tip": "A non-default database table prefix may be used as an optional defense-in-depth control, but it should not be treated as a primary hardening measure. WordPress hardening guidance classifies table-prefix changes as a form of security through obscurity with limited security value. Prioritize patching, least privilege, and secure coding controls be...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Database"
+        ]
+    },
+    {
+        "id": "3.4",
+        "title": "Ensure database query logging is enabled",
+        "section": "Database Configuration",
+        "level": 2,
+        "tip": "MySQL/MariaDB general query log or slow query log should be enabled to support forensic analysis and intrusion detection. Query logs provide critical evidence during incident response, including the exact queries executed by an attacker who achieved SQL injection. They also help identify performance issues that may indicate abuse.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Database",
+            "Logging"
+        ]
+    },
+    {
+        "id": "4.1",
+        "title": "Ensure `DISALLOW_FILE_EDIT` is set to true (baseline)",
+        "section": "WordPress Core Configuration",
+        "level": 1,
+        "tip": "The `DISALLOW_FILE_EDIT` constant should be defined as `true` in `wp-config.php` to disable the built-in theme and plugin editor. **Note:** `DISALLOW_FILE_MODS` is a stricter superset that also blocks plugin/theme installation and updates from the Dashboard. Use `DISALLOW_FILE_MODS` only for hardened profiles with a documented external update wo...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec"
+        ]
+    },
+    {
+        "id": "4.2",
+        "title": "Ensure `FORCE_SSL_ADMIN` is set to true",
+        "section": "WordPress Core Configuration",
+        "level": 1,
+        "tip": "The `FORCE_SSL_ADMIN` constant forces all admin and login pages to be served over HTTPS. Without this setting, admin session cookies could be transmitted over unencrypted HTTP if a user accesses the admin via an HTTP URL, enabling session hijacking via network interception.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "TLS"
+        ]
+    },
+    {
+        "id": "4.3",
+        "title": "Ensure WordPress debug mode is disabled in production",
+        "section": "WordPress Core Configuration",
+        "level": 1,
+        "tip": "`WP_DEBUG` must be set to `false` in production environments. `WP_DEBUG_DISPLAY` must also be `false`, and `WP_DEBUG_LOG` should write to a non-public location if enabled. Debug output can reveal file paths, database queries, and PHP errors to attackers. Debug log files in the default location (`wp-content/debug.log`) are publicly accessible unl...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Debugging"
+        ]
+    },
+    {
+        "id": "4.4",
+        "title": "Ensure XML-RPC is disabled",
+        "section": "WordPress Core Configuration",
+        "level": 1,
+        "tip": "The XML-RPC interface (`xmlrpc.php`) should be disabled unless specifically required by a remote publishing client or integration. XML-RPC is commonly exploited for brute-force amplification attacks (the `system.multicall` method allows hundreds of password attempts in a single HTTP request) and DDoS amplification via pingbacks. While WordPress ...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "XMLRPC"
+        ]
+    },
+    {
+        "id": "4.5",
+        "title": "Ensure automatic core updates are enabled",
+        "section": "WordPress Core Configuration",
+        "level": 1,
+        "tip": "WordPress automatic background updates for minor (security) releases must remain enabled. Major version auto-updates should be evaluated based on organizational policy. Minor releases contain only security fixes and critical bug patches. Disabling them leaves the site vulnerable to known, publicly disclosed exploits.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Updates"
+        ]
+    },
+    {
+        "id": "4.6",
+        "title": "Ensure unique authentication keys and salts are configured",
+        "section": "WordPress Core Configuration",
+        "level": 1,
+        "tip": "All eight authentication keys and salts in `wp-config.php` must be set to unique, random values. These are: `AUTH_KEY`, `SECURE_AUTH_KEY`, `LOGGED_IN_KEY`, `NONCE_KEY`, and their corresponding `SALT` counterparts. These keys are used to hash session tokens stored in cookies. Default, empty, or guessable values weaken cookie security, making sess...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Authentication",
+            "WPConfig"
+        ]
+    },
+    {
+        "id": "4.7",
+        "title": "Consider replacing `wp-cron.php` with a system cron job",
+        "section": "WordPress Core Configuration",
+        "level": 2,
+        "tip": "For higher operational reliability, WordPress's built-in pseudo-cron (`wp-cron.php`) can be disabled and replaced with a real system-level cron job. This improves scheduling predictability, especially on very low-traffic or very high-traffic sites. `wp-cron.php` is traffic-triggered, so jobs can be delayed on low-traffic sites and bursty on high...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "PHP",
+            "WPCron"
+        ]
+    },
+    {
+        "id": "5.1",
+        "title": "Ensure two-factor authentication is required for administrators",
+        "section": "Authentication and Access Control",
+        "level": 1,
+        "tip": "All user accounts with the Administrator role must have two-factor authentication (2FA) enabled using TOTP-based authenticator apps or hardware security keys (WebAuthn/FIDO2). Compromised administrator credentials grant full control over the WordPress installation. 2FA ensures that a stolen password alone is insufficient to gain access.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Authentication",
+            "2FA"
+        ]
+    },
+    {
+        "id": "5.2",
+        "title": "Ensure the number of administrator accounts is minimized",
+        "section": "Authentication and Access Control",
+        "level": 1,
+        "tip": "The number of user accounts with the Administrator role should be limited to the minimum required. A primary administrator account should be reserved for emergency use only. Administrator account usernames must not use easily guessed values such as `admin`, `administrator`, or `webmaster`, which are the first targets of automated brute-force att...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Authentication"
+        ]
+    },
+    {
+        "id": "5.3",
+        "title": "Ensure maximum session lifetime is enforced",
+        "section": "Authentication and Access Control",
+        "level": 1,
+        "tip": "WordPress session cookies should have a maximum lifetime enforced, regardless of user activity. Privileged accounts (Administrators, Editors) should have shorter session limits (8–24 hours). Additionally, idle sessions should be terminated after a defined period of inactivity, the \"Remember Me\" option should be disabled or minimized for admini...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Authentication",
+            "Sessions"
+        ]
+    },
+    {
+        "id": "5.4",
+        "title": "Ensure user enumeration is prevented",
+        "section": "Authentication and Access Control",
+        "level": 1,
+        "tip": "The REST API user endpoint and author archive URLs should be restricted to prevent unauthenticated enumeration of usernames. Username enumeration provides attackers with valid login targets for brute-force and credential stuffing attacks. The default WordPress REST API exposes user slugs at `/wp-json/wp/v2/users`, and author archives expose user...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Authentication",
+            "UserEnum"
+        ]
+    },
+    {
+        "id": "5.5",
+        "title": "Ensure reauthentication is required for privileged actions",
+        "section": "Authentication and Access Control",
+        "level": 2,
+        "tip": "WordPress should require reauthentication (sudo mode) before performing sensitive administrative actions. Users should be challenged for their password (and 2FA) when they attempt destructive or high-risk operations. This can be achieved with [Fortress](https://github.com/snicco/fortress) or [wp-sudo](https://github.com/dknauss/wp-sudo) (disclos...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Authentication"
+        ]
+    },
+    {
+        "id": "5.6",
+        "title": "Ensure REST API exposure is intentionally scoped",
+        "section": "Authentication and Access Control",
+        "level": 2,
+        "tip": "Keep required public REST endpoints available, and restrict only endpoints that should not be public (for example, user-enumeration routes or custom sensitive routes). WordPress REST API is designed to expose some public content endpoints without authentication. Blanket authentication requirements often break themes, plugins, and headless front ...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Authentication",
+            "API",
+            "RESTAPI"
+        ]
+    },
+    {
+        "id": "5.7",
+        "title": "Ensure a strong password policy is enforced",
+        "section": "Authentication and Access Control",
+        "level": 1,
+        "tip": "Configure WordPress to enforce a strong password policy that follows current OWASP and NIST recommendations: minimum length of 15 characters as the baseline recommendation, screening against breached password and dictionary lists, and no arbitrary complexity rules that lead to predictable patterns. NIST permits 8 characters only when a password ...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Passwords",
+            "Authentication"
+        ]
+    },
+    {
+        "id": "5.8",
+        "title": "Ensure user roles and capabilities are defined in code",
+        "section": "Authentication and Access Control",
+        "level": 2,
+        "tip": "User roles and custom capabilities should be defined in code (via a must-use plugin) rather than relying solely on database-stored role definitions. The `init` hook is the recommended place to call `add_role()` or `add_cap()`. This file-based approach ensures role definitions are version-controlled, auditable, and resistant to tampering.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Authentication"
+        ]
+    },
+    {
+        "id": "6.1",
+        "title": "Ensure file ownership model is documented and least-privilege",
+        "section": "File System Permissions",
+        "level": 2,
+        "tip": "Document and enforce one least-privilege ownership model per environment. Dedicated/self-managed hosts should prefer a non-web-server file owner (for example, `wp_user:www-data`). Shared/managed environments may use web-server ownership only with explicit compensating controls. Ownership strategy is environment-dependent. A non-web-server owner ...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "FilePermissions"
+        ]
+    },
+    {
+        "id": "6.2",
+        "title": "Ensure `wp-config.php` has restrictive permissions",
+        "section": "File System Permissions",
+        "level": 1,
+        "tip": "`wp-config.php` must have the most restrictive file permissions possible. WordPress's official hardening documentation recommends 400 (owner read-only) or 440 (owner and group read-only). - **400** is preferred when configuration is managed by deployment automation and no runtime process needs write access. - **600** may be used temporarily when...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "PHP",
+            "FilePermissions",
+            "RESTAPI"
+        ]
+    },
+    {
+        "id": "6.3",
+        "title": "Ensure `wp-config.php` is placed above the document root",
+        "section": "File System Permissions",
+        "level": 2,
+        "tip": "Where server configuration allows, `wp-config.php` should be moved one directory above the web document root. WordPress automatically detects this placement and loads the file from the parent directory. Placing `wp-config.php` above the document root can provide defense in depth by reducing direct web exposure. However, WordPress documentation a...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "PHP",
+            "FilePermissions",
+            "WPConfig"
+        ]
+    },
+    {
+        "id": "7.1",
+        "title": "Ensure WordPress user activity logging is enabled",
+        "section": "Logging and Monitoring",
+        "level": 1,
+        "tip": "A WordPress audit logging solution must be installed and configured to record all user activity, including: logins and logouts, failed login attempts, content creation and modification, user account changes, plugin and theme changes, and settings modifications. Audit logs are essential for detecting unauthorized activity, supporting incident res...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Logging",
+            "Monitoring"
+        ]
+    },
+    {
+        "id": "7.2",
+        "title": "Ensure file integrity monitoring is configured",
+        "section": "Logging and Monitoring",
+        "level": 2,
+        "tip": "A mechanism should be in place to detect unauthorized changes to WordPress core files, plugins, themes, and configuration files. Unauthorized file modifications are a strong indicator of compromise. Integrity monitoring detects web shells, backdoors, and unauthorized code changes.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Logging",
+            "Monitoring"
+        ]
+    },
+    {
+        "id": "7.3",
+        "title": "Ensure server-level malware detection is configured",
+        "section": "Logging and Monitoring",
+        "level": 2,
+        "tip": "A server-level malware detection solution should be deployed to scan the WordPress file system for known malicious patterns, web shells, backdoors, and unauthorized modifications beyond what WordPress-level integrity checks can detect. Application-level file integrity checks (7.2) compare files against known-good checksums but cannot detect malw...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Logging",
+            "Monitoring",
+            "Malware"
+        ]
+    },
+    {
+        "id": "8.1",
+        "title": "Ensure all unused plugins and themes are removed",
+        "section": "Supply Chain and Component (Plugin and Theme) Management",
+        "level": 1,
+        "tip": "All deactivated plugins and non-active themes (except one default fallback theme) should be deleted from the server, not merely deactivated. Deactivated plugins and themes remain on the file system and may contain exploitable vulnerabilities. PHP files in deactivated plugins can be accessed directly if the web server processes them, bypassing Wo...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Plugins",
+            "Themes",
+            "AISecurity"
+        ]
+    },
+    {
+        "id": "8.2",
+        "title": "Ensure all plugins and themes are from trusted sources",
+        "section": "Supply Chain and Component (Plugin and Theme) Management",
+        "level": 1,
+        "tip": "Plugins and themes should only be installed from the official WordPress.org repository or verified commercial vendors. Nulled (pirated) plugins and themes must never be used. Nulled and pirated plugins are a leading vector for malware distribution. They frequently contain backdoors, cryptominers, SEO spam injectors, and other malicious code. Eve...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Plugins",
+            "Themes",
+            "AISecurity"
+        ]
+    },
+    {
+        "id": "8.3",
+        "title": "Ensure plugin and theme updates are applied promptly",
+        "section": "Supply Chain and Component (Plugin and Theme) Management",
+        "level": 1,
+        "tip": "Security updates for plugins and themes should be applied within 72 hours of release. Critical security updates should be applied immediately or virtual-patched within 24 hours. Known vulnerabilities in popular WordPress plugins are actively exploited within hours of public disclosure. Delayed patching is the most common technical root cause of ...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Plugins",
+            "Themes",
+            "Updates"
+        ]
+    },
+    {
+        "id": "8.4",
+        "title": "Ensure a Software Bill of Materials (SBOM) is maintained",
+        "section": "Supply Chain and Component (Plugin and Theme) Management",
+        "level": 2,
+        "tip": "A machine-readable Software Bill of Materials (SBOM) should be maintained for each WordPress deployment, documenting all components including WordPress core version, all active and inactive plugins and themes, third-party libraries bundled within plugins or themes, PHP version and extensions, and web server and database versions.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Plugins",
+            "Themes",
+            "AISecurity"
+        ]
+    },
+    {
+        "id": "9.1",
+        "title": "Ensure Web Application Firewall is configured",
+        "section": "Web Application Firewall",
+        "level": 2,
+        "tip": "Deploy a Web Application Firewall (WAF). This can be a server-level solution, such as **ModSecurity**, **open-appsec**, **NGINX App Protect WAF**, **7G WAF**, or **Coraza** (OWASP Coraza WAF) with the OWASP Core Rule Set (CRS), or a cloud-based solution, such as **Cloudflare WAF**, **Akamai**, or **Sucuri**.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Firewall"
+        ]
+    },
+    {
+        "id": "10.1",
+        "title": "Ensure backup and recovery procedures are implemented",
+        "section": "Backup and Recovery",
+        "level": 1,
+        "tip": "Automated backups of the complete WordPress installation (files and database) must be performed regularly, stored offsite, encrypted, and tested for successful restoration on a recurring schedule. In the event of a security breach, the most reliable recovery strategy is to identify the root cause, verify the integrity of backups, and rebuild the...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Backup"
+        ]
+    },
+    {
+        "id": "11.1",
+        "title": "Ensure AI API keys are securely stored",
+        "section": "AI Integration Security",
+        "level": 1,
+        "tip": "API keys and credentials for AI/LLM services (OpenAI, Anthropic, Google, etc.) must be stored securely and never exposed in client-side code, version control, or the WordPress database. AI API keys grant access to paid services and may allow data exfiltration or abuse. The Verizon DBIR (2025) found that leaked secrets in code repositories had a ...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "API",
+            "AISecurity"
+        ]
+    },
+    {
+        "id": "11.2",
+        "title": "Ensure AI-generated content is sanitized",
+        "section": "AI Integration Security",
+        "level": 1,
+        "tip": "All content generated by AI services must be treated as untrusted input and sanitized before rendering or storage, using WordPress's standard escaping functions (`esc_html()`, `wp_kses()`, `esc_attr()`, etc.). AI models can generate content that includes XSS payloads, SQL injection patterns, or malicious HTML — either through prompt injection ...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "AISecurity"
+        ]
+    },
+    {
+        "id": "11.3",
+        "title": "Ensure AI tool usage is governed by policy",
+        "section": "AI Integration Security",
+        "level": 2,
+        "tip": "Organizations must maintain and enforce a policy governing the use of AI tools by WordPress team members and integrated into WordPress sites. The policy must address approved tools, data classification for AI inputs, authentication requirements, and disclosure of AI-generated content.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "AISecurity"
+        ]
+    },
+    {
+        "id": "12.1",
+        "title": "Ensure SSH key-based authentication is enforced",
+        "section": "Server Access and Network",
+        "level": 1,
+        "tip": "SSH access to the server must use key-based authentication only. Password-based SSH authentication must be disabled. Password-based SSH authentication is vulnerable to brute-force and credential stuffing attacks. Key-based authentication is significantly more resistant to these attacks and is the standard for secure server access.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Authentication",
+            "SSH"
+        ]
+    },
+    {
+        "id": "12.2",
+        "title": "Ensure SFTP is used and FTP is disabled",
+        "section": "Server Access and Network",
+        "level": 1,
+        "tip": "Prefer SFTP (SSH File Transfer Protocol) or SCP for file transfers. Plain FTP must be disabled. FTPS may be permitted temporarily for legacy interoperability, with enforced TLS and a migration plan to SFTP. FTP transmits credentials and data in cleartext and should not be used. SFTP operates over SSH and is simpler to secure operationally. FTPS ...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "SFTP"
+        ]
+    },
+    {
+        "id": "12.3",
+        "title": "Ensure a host-based firewall is configured",
+        "section": "Server Access and Network",
+        "level": 1,
+        "tip": "A host-based firewall (e.g., UFW on Ubuntu/Debian, firewalld on RHEL/CentOS) must be enabled and configured to restrict inbound traffic to only required ports: HTTP (80), HTTPS (443), and SSH. A host-based firewall provides a final layer of network defense, blocking unauthorized access to services running on the server even if upstream network c...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Firewall"
+        ]
+    },
+    {
+        "id": "12.4",
+        "title": "Ensure per-site process isolation is configured",
+        "section": "Server Access and Network",
+        "level": 2,
+        "tip": "Each WordPress site on the server should run under a dedicated system user account with its own PHP-FPM pool. Sites must not share the same PHP process user. Process isolation limits the blast radius of a compromise. If one site is breached, the attacker cannot read files, access databases, or modify code belonging to other sites on the same ser...",
+        "hashtags": [
+            "WordPress",
+            "InfoSec"
+        ]
+    },
+    {
+        "id": "13.1",
+        "title": "Ensure Super Admin accounts are minimized and audited",
+        "section": "Multisite Security",
+        "level": 1,
+        "tip": "In a WordPress Multisite network, the number of Super Admin accounts must be limited to the absolute minimum required. Super Admin grants unrestricted access across all sites in the network, including the ability to install plugins and themes network-wide, create and delete sites, and manage all users across all sites.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Multisite"
+        ]
+    },
+    {
+        "id": "13.2",
+        "title": "Ensure network-activated plugins are reviewed for cross-site impact",
+        "section": "Multisite Security",
+        "level": 2,
+        "tip": "Plugins activated at the network level in a WordPress Multisite installation run on all sites in the network. Each network-activated plugin should be reviewed for its security impact across all sites, and network activation should be reserved for plugins that genuinely require network-wide operation.",
+        "hashtags": [
+            "WordPress",
+            "InfoSec",
+            "Plugins",
+            "Multisite"
+        ]
+    }
+]
