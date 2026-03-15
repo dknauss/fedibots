@@ -5,15 +5,20 @@ declare(strict_types=1);
 namespace Fedibots\Http;
 
 use Fedibots\Config;
+use Fedibots\Storage\StorageInterface;
 use Fedibots\ActivityPub\WebFinger;
 use Fedibots\ActivityPub\Actor;
 use Fedibots\ActivityPub\NodeInfo;
 use Fedibots\ActivityPub\Collections;
+use Fedibots\ActivityPub\Inbox;
+use Fedibots\ActivityPub\Signature;
 
 final class Router
 {
-    public function __construct(private Config $config)
-    {
+    public function __construct(
+        private Config $config,
+        private StorageInterface $storage,
+    ) {
     }
 
     public function dispatch(): void
@@ -24,10 +29,10 @@ final class Router
             '.well-known/webfinger' => (new WebFinger($this->config))->handle(),
             '.well-known/nodeinfo'  => (new NodeInfo($this->config))->discovery(),
             'nodeinfo/2.1'          => (new NodeInfo($this->config))->schema(),
-            'inbox'                 => $this->stubInbox(),
-            'outbox'                => (new Collections($this->config))->outbox(),
-            'followers'             => (new Collections($this->config))->followers(),
-            'following'             => (new Collections($this->config))->following(),
+            'inbox'                 => (new Inbox($this->config, $this->storage, new Signature($this->config)))->handle(),
+            'outbox'                => (new Collections($this->config, $this->storage))->outbox(),
+            'followers'             => (new Collections($this->config, $this->storage))->followers(),
+            'following'             => (new Collections($this->config, $this->storage))->following(),
             default                 => $this->matchDynamic($path),
         };
     }
@@ -43,20 +48,6 @@ final class Router
         }
 
         $this->notFound();
-    }
-
-    private function stubInbox(): void
-    {
-        // Phase 2 will implement full inbox handling
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            http_response_code(202);
-            header('Content-Type: application/json');
-            echo json_encode(['status' => 'accepted']);
-            return;
-        }
-        http_response_code(405);
-        header('Content-Type: application/json');
-        echo json_encode(['error' => 'Method not allowed']);
     }
 
     private function notFound(): void
