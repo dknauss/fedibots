@@ -1,0 +1,35 @@
+{
+    "name": "dknauss/fedibots",
+    "description": "PHP framework for creating write-only ActivityPub fediverse bots",
+    "type": "project",
+    "license": "MIT",
+    "keywords": ["activitypub", "fediverse", "mastodon", "bot", "php"],
+    "authors": [
+        {
+            "name": "Dan Knauss",
+            "homepage": "https://github.com/dknauss"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "ext-openssl": "*",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Fedibots\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Fedibots\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
