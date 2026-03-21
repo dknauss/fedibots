@@ -65,6 +65,26 @@ final class Inbox
 
     private function handleFollow(array $activity, string $actorUrl): void
     {
+        $activityActor = is_string($activity['actor'] ?? null) ? $activity['actor'] : null;
+        $followObject = $activity['object'] ?? null;
+        $followTarget = match (true) {
+            is_string($followObject) => $followObject,
+            is_array($followObject) && is_string($followObject['id'] ?? null) => $followObject['id'],
+            default => null,
+        };
+
+        if ($activityActor !== $actorUrl || $followTarget !== $this->config->actorUrl()) {
+            $this->storage->log('follow', 'Rejected invalid follow activity', [
+                'verified_actor' => $actorUrl,
+                'activity_actor' => $activityActor,
+                'object' => $followTarget,
+            ]);
+            http_response_code(400);
+            header('Content-Type: application/json');
+            echo json_encode(['error' => 'Invalid follow activity']);
+            return;
+        }
+
         $actorData = $this->signature->fetchJson($actorUrl);
 
         $this->storage->saveFollower($actorUrl, [

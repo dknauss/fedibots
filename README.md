@@ -32,6 +32,8 @@ php bin/post.php --dry-run
 php bin/verify.php https://my-bot.example.com
 ```
 
+Set `BASE_URL` in `.env` to the bot's final canonical HTTPS URL. Scheduled CLI posts and HTTP signatures use that value.
+
 ## How It Works
 
 Each bot is a standalone ActivityPub server. Other fediverse users can search for `@botname@yourdomain.com`, follow it, and see posts in their timeline.
@@ -57,6 +59,7 @@ bin/post.php (cron)  -->  Outbox  -->  Delivery (multi-cURL)
 | `/{username}` | Actor profile (JSON-LD) |
 | `/inbox` | Receive follow/unfollow |
 | `/outbox` | Published posts collection |
+| `/posts/{id}` | Individual published Note |
 | `/followers` | Follower list |
 | `/action/send` | Create & broadcast a post (POST, password-protected) |
 

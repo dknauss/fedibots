@@ -26,6 +26,7 @@ if (file_exists($envPath)) {
 }
 
 // Gather bot identity
+$baseUrl = rtrim(prompt('Base URL (full HTTPS URL for this bot)', 'https://my-bot.example.com'), '/');
 $username = prompt('Bot username (alphanumeric, no spaces)', 'mybot');
 $realname = prompt('Display name', ucfirst($username));
 $summary  = prompt('Bio (short, HTML links allowed)', "A fediverse bot powered by Fedibots.");
@@ -63,6 +64,7 @@ $birthday = date('Y-m-d\TH:i:s\Z');
 
 $env = <<<ENV
 # Bot identity
+BASE_URL={$baseUrl}
 USERNAME={$username}
 REALNAME={$realname}
 SUMMARY={$summary}
@@ -97,6 +99,7 @@ foreach (['data/followers', 'data/posts', 'data/inbox', 'data/logs', 'media'] as
 echo "Data directories created.\n";
 
 echo "\n=== Setup Complete ===\n";
+echo "Base URL:  {$baseUrl}\n";
 echo "Username:  @{$username}\n";
 echo "Password:  {$password}\n";
 echo "\nNext steps:\n";

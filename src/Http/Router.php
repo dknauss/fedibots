@@ -44,6 +44,11 @@ final class Router
     {
         $username = $this->config->getRequired('USERNAME');
 
+        if (preg_match('#^posts/([^/]+)$#', $path, $matches) === 1) {
+            $this->outbox()->item($matches[1]);
+            return;
+        }
+
         // Match /{username} or /@{username}
         if ($path === $username || $path === '@' . $username) {
             (new Actor($this->config))->handle();

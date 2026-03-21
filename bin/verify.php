@@ -31,11 +31,21 @@ if (file_exists($envPath)) {
     $env = parseEnv($envPath);
 
     // Required fields
-    foreach (['USERNAME', 'KEY_PRIVATE', 'KEY_PUBLIC', 'PASSWORD'] as $key) {
+    foreach (['BASE_URL', 'USERNAME', 'KEY_PRIVATE', 'KEY_PUBLIC', 'PASSWORD'] as $key) {
         if (!empty($env[$key])) {
             pass("{$key} is set");
         } else {
             fail("{$key} is missing or empty in .env");
+        }
+    }
+
+    if (!empty($env['BASE_URL'])) {
+        $baseUrl = rtrim($env['BASE_URL'], '/');
+        $parts = parse_url($baseUrl);
+        if (($parts['scheme'] ?? '') === 'https' && !empty($parts['host'])) {
+            pass('BASE_URL is a valid HTTPS URL');
+        } else {
+            fail('BASE_URL must be a full HTTPS URL, for example https://bot.example.com');
         }
     }
 
@@ -134,6 +144,9 @@ if ($liveUrl !== null) {
     echo "\n--- Live Endpoint Tests ---\n";
 
     $username = $env['USERNAME'] ?? 'unknown';
+    if (!empty($env['BASE_URL']) && rtrim($env['BASE_URL'], '/') !== $liveUrl) {
+        warn("Live URL {$liveUrl} does not match BASE_URL {$env['BASE_URL']}");
+    }
 
     // WebFinger
     $wfUrl = "{$liveUrl}/.well-known/webfinger?resource=acct:{$username}@" . parse_url($liveUrl, PHP_URL_HOST);
@@ -160,6 +173,16 @@ if ($liveUrl !== null) {
         pass("Outbox responds with " . ($outboxResponse['totalItems'] ?? 0) . " items");
     } else {
         fail("Outbox endpoint failed at: {$outboxUrl}");
+    }
+
+    if (($outboxResponse['totalItems'] ?? 0) > 0 && isset($outboxResponse['orderedItems'][0]['object']['id'])) {
+        $postUrl = $outboxResponse['orderedItems'][0]['object']['id'];
+        $postResponse = httpGet($postUrl, 'application/activity+json');
+        if ($postResponse !== null && ($postResponse['type'] ?? '') === 'Note') {
+            pass("Published post dereferences as Note: {$postUrl}");
+        } else {
+            fail("Published post URL failed at: {$postUrl}");
+        }
     }
 }
 

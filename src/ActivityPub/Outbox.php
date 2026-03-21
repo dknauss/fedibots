@@ -44,6 +44,29 @@ final class Outbox
     }
 
     /**
+     * Handle GET /posts/{id} — serve a published Note.
+     */
+    public function item(string $postId): void
+    {
+        $post = $this->storage->getPost($postId);
+        if ($post === null) {
+            http_response_code(404);
+            header('Content-Type: application/json');
+            echo json_encode(['error' => 'Post not found']);
+            return;
+        }
+
+        header('Content-Type: application/activity+json');
+        header('Access-Control-Allow-Origin: *');
+
+        $note = ($post['type'] ?? null) === 'Create' && isset($post['object']) && is_array($post['object'])
+            ? $post['object']
+            : $post;
+
+        echo json_encode($note, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+    }
+
+    /**
      * Handle POST /action/send — create and broadcast a post.
      * Requires password authentication.
      */

@@ -33,6 +33,19 @@ final class Config
             $this->values[$key] = $value;
         }
 
+        $configuredBaseUrl = rtrim($this->values['BASE_URL'] ?? '', '/');
+        if ($configuredBaseUrl !== '') {
+            $parts = parse_url($configuredBaseUrl);
+            $host = $parts['host'] ?? null;
+            if ($host === null) {
+                throw new \RuntimeException('BASE_URL must include a valid host');
+            }
+
+            $this->baseUrl = $configuredBaseUrl;
+            $this->domain = $host;
+            return;
+        }
+
         $this->domain = $_SERVER['HTTP_HOST'] ?? 'localhost';
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $this->baseUrl = "{$scheme}://{$this->domain}";
