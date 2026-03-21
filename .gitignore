@@ -9,6 +9,9 @@ media/
 # Composer
 vendor/
 
+# PHPUnit
+.phpunit.cache/
+
 # OS
 .DS_Store
 Thumbs.db
