@@ -1,4 +1,6 @@
 # Fedibots
+[![License](https://img.shields.io/github/license/dknauss/fedibots)](LICENSE) [![CI](https://github.com/dknauss/fedibots/actions/workflows/ci.yml/badge.svg)](https://github.com/dknauss/fedibots/actions/workflows/ci.yml) [![Security Policy](https://img.shields.io/badge/security-policy-4c1)](SECURITY.md)
+
 
 A PHP framework for creating write-only ActivityPub bots on the fediverse.
 
