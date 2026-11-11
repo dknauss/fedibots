@@ -8,3 +8,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # PHPUnit 12 requires PHP 8.3 and 13 requires PHP 8.4, above this repo's CI
+    # floor. Revisit when the floor rises.
+    ignore:
+      - dependency-name: "phpunit/phpunit"
+        versions: [">= 12"]
